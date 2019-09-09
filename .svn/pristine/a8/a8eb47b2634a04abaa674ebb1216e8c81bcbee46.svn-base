@@ -1,0 +1,223 @@
+package com.aboluo.attend.controller;
+
+import com.aboluo.attend.pojo.Emp;
+import com.aboluo.attend.service.AdminService;
+import com.aboluo.attend.service.EmpService;
+import com.aboluo.attend.util.Page;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Controller
+@RequestMapping("/manager")
+public class ManagerController {
+
+    @Autowired
+    private EmpService empService;
+
+    @Autowired
+    private AdminService adminService;
+
+    //进入注册页面
+    @RequestMapping(value = "/register")
+    public String register(){
+        return "login/register";
+    }
+
+    //默认获取第一页的员工数据（管理员权限）
+    @RequestMapping(value = "/empList", method = RequestMethod.GET)
+    public String defaultEmpList(Model model){
+        Page page = new Page();
+        int start_index = 1;
+        int page_size = 7;
+        Map<String, Integer> index_map = new HashMap<>();
+        index_map.put("start_index", start_index-1);
+        index_map.put("page_size", page_size);
+        List<Emp> empList = empService.selectEmpByPage(index_map);
+        int total = empService.selectEmpCount();
+        page.setNow_page(start_index);
+        page.setTotal(total);
+        page.setPage_size(page_size);
+        page.setEmps(empList);
+        model.addAttribute("page" ,page);
+        return "admin/empManage";
+    }
+
+    //分页获取员工信息（管理员权限）
+    @RequestMapping(value = "/empList/{page}", method = RequestMethod.GET)
+    @ResponseBody
+    public Page EmpList(@PathVariable(name = "page") Integer index){
+        Page page = new Page();
+        int page_size = 7;
+        int start_index = (index-1)*page_size;
+        Map<String, Integer> index_map = new HashMap<>();
+        index_map.put("start_index", start_index);
+        index_map.put("page_size", page_size);
+        List<Emp> empList = empService.selectEmpByPage(index_map);
+        int total = empService.selectEmpCount();
+        page.setNow_page(index);
+        page.setTotal(total);
+        page.setPage_size(page_size);
+        page.setEmps(empList);
+        return page;
+    }
+
+    /*
+     *插入数据
+     * 注意：参数前写@RequestBody只接收json格式的数据，@ResponseBody返回的是文本信息到前端
+     * */
+    @RequestMapping(value = "/create" ,method = RequestMethod.POST)
+    @ResponseBody
+    public String createEmp(Emp emp){
+        int count = empService.insertEmp(emp);
+        if (count > 0){
+            return "successful";
+        }else {
+            return "fail";
+        }
+    }
+
+    //通过员工编号来查询员工信息
+    @RequestMapping(value = "/selectEmpById", method = RequestMethod.GET)
+    @ResponseBody
+    public Emp EmpById(Integer emp_id){
+        Emp emp = empService.selectEmpById(emp_id);
+        if (emp != null){
+            return emp;
+        }else {
+            return null;
+        }
+
+    }
+
+    @RequestMapping(value = "/updateEmp", method = RequestMethod.POST)
+    @ResponseBody
+    public String updateEmp(Emp emp){
+        System.out.println(emp);
+        int count = empService.updateEmp(emp);
+        if (count > 0){
+            return "ok";
+        }else{
+            return "fail";
+        }
+    }
+    /**/
+    @RequestMapping("/deleteEmp")
+    @ResponseBody
+    public String deleteEmp(Integer emp_id){
+        int count = empService.deleteEmp(emp_id);
+        if (count > 0){
+            return "ok";
+        }else{
+            return "false";
+        }
+    }
+
+
+    /*
+     * 条件搜索
+     * 条件分别为部门，性别，禁用状态
+     * 需要传递一个默认的页数，start,默认为1
+     * */
+    @RequestMapping(value = "/tj_srch", method = RequestMethod.GET)
+    @ResponseBody
+    public Page searchEmpsByConditinon(@RequestParam(value = "dept", defaultValue = "") String dept, @RequestParam(value = "gender", defaultValue = "") String gender,
+                                       @RequestParam(value = "disable", defaultValue = "") Integer disable, @RequestParam(value = "start_index", defaultValue = "1") Integer start){
+
+        List<Emp> emps = empService.searchByCondition(dept, gender, disable);
+        int total = empService.getSearchEmpCount(dept, gender, disable);
+        Page page = new Page();
+        page.setNow_page(start);
+        page.setTotal(total);
+        page.setPage_size(7);
+        page.setAll_emps(emps);
+        List<Emp> emps_page = page.emp_page();
+        page.setEmps(emps_page);
+        return page;
+    }
+
+    //条件搜索结果分页
+    @RequestMapping(value = "/srch_result", method = RequestMethod.GET)
+    @ResponseBody
+    public Page searchRusult(@RequestParam(value = "dept", defaultValue = "") String dept, @RequestParam(value = "gender", defaultValue = "") String gender,
+                             @RequestParam(value = "disable", defaultValue = "") Integer disable, @RequestParam(value = "start_index") Integer start){
+        List<Emp> emps = empService.searchByCondition(dept, gender, disable);
+        int total = empService.getSearchEmpCount(dept, gender, disable);
+        Page page = new Page();
+        page.setNow_page(start);
+        page.setTotal(total);
+        page.setPage_size(7);
+        page.setAll_emps(emps);
+        List<Emp> emps_page = page.emp_page();
+        page.setEmps(emps_page);
+        return page;
+    }
+
+    //模糊查询
+    @RequestMapping(value = "mh_srch", method = RequestMethod.GET)
+    @ResponseBody
+    public Page mh_search(@RequestParam("srch_content") String content, @RequestParam(value = "page", defaultValue = "1") Integer index){
+        Page page = new Page();
+        List<Emp> all_emps = empService.searchByContent(content);
+        int total = empService.getSearchCount(content);
+        page.setAll_emps(all_emps);
+        page.setTotal(total);
+        page.setPage_size(7);
+        page.setNow_page(index);
+        List<Emp> emps = page.emp_page();
+        page.setEmps(emps);
+        return page;
+    }
+
+    /*
+    * 跳转到个人信息界面
+    * */
+    @RequestMapping("/adminInfo")
+    public String AdminOwnInfo(){
+        return "admin/adminInfo";
+    }
+
+    /*
+    * 修改个人信息
+    * */
+    @RequestMapping(value = "/updateInfo", method = RequestMethod.POST)
+    public String updateAdminInfo(Emp emp, HttpSession session){
+        int count = adminService.updateOwnInfo(emp);
+        if (count > 1){
+            session.setAttribute("session_emp", emp);
+
+            return "admin/adminInfo";
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/adminInfo",method = RequestMethod.GET)
+    public String adminInfo(){
+        return "admin/adminInfo";
+    }
+
+    @RequestMapping(value = "/change",method = RequestMethod.POST)
+    @ResponseBody
+    public String changePas(@RequestParam("password") String password,@RequestParam("old_password") String old_password,HttpSession session){
+         Emp emp1 =(Emp)session.getAttribute("session_emp");
+         System.out.println(password + "," + old_password);
+         if(emp1.getPassword().equals(old_password)){
+             emp1.setPassword(password);
+             int count = adminService.changePas(emp1);
+             if(count>1){
+                 return "success";
+             }
+         }
+        else{
+             return "failed";
+         }
+       return "failed";
+    }
+
+}

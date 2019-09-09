@@ -1,0 +1,124 @@
+package com.aboluo.attend.controller;
+
+import com.aboluo.attend.pojo.Emp;
+import com.aboluo.attend.service.AdminService;
+import com.aboluo.attend.util.Page;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Controller
+@RequestMapping(value = "super")
+public class SupAdmController {
+   @Autowired
+    private AdminService adminService;
+    //超级管理员
+    @RequestMapping(value = "supadmin",method = RequestMethod.GET)
+    public String adminList(Model model){
+        Page page = new Page();
+        int start_index = 1;
+        int page_size = 7;
+        Map<String, Integer> index_map = new HashMap<>();
+        index_map.put("start_index", start_index-1);
+        index_map.put("page_size", page_size);
+        List<Emp> empList = adminService.selectAdminByPage(index_map);
+        System.out.println(empList);
+        int total = adminService.selectEmpCount();
+        page.setNow_page(start_index);
+        page.setTotal(total);
+        page.setPage_size(page_size);
+        page.setEmps(empList);
+        model.addAttribute("page" ,page);
+        return "/supAdmin/supAdmin";
+    }
+
+    //分页获取员工信息（管理员权限）
+    @RequestMapping(value = "/supadmin/{page}", method = RequestMethod.GET)
+    @ResponseBody
+    public Page EmpList(@PathVariable(name = "page") Integer index){
+        Page page = new Page();
+        int page_size = 7;
+        int start_index = (index-1)*page_size;
+        Map<String, Integer> index_map = new HashMap<>();
+        index_map.put("start_index", start_index);
+        index_map.put("page_size", page_size);
+        List<Emp> empList = adminService.selectAdminByPage(index_map);
+        int total = adminService.selectAdminCount();
+        page.setNow_page(index);
+        page.setTotal(total);
+        page.setPage_size(page_size);
+        page.setEmps(empList);
+        return page;
+    }
+
+    @RequestMapping(value = "getadmin",method = RequestMethod.GET)
+    public String getadmin(Model model){
+        Page page = new Page();
+        int start_index = 1;
+        int page_size = 7;
+        Map<String, Integer> index_map = new HashMap<>();
+        index_map.put("start_index", start_index-1);
+        index_map.put("page_size", page_size);
+        List<Emp> empList = adminService.get_AdminByPage(index_map);
+        System.out.println(empList);
+        int total = adminService.selectAdminCount();
+        page.setNow_page(start_index);
+        page.setTotal(total);
+        page.setPage_size(page_size);
+        page.setEmps(empList);
+        model.addAttribute("page" ,page);
+        return "/supAdmin/supAdmin";
+    }
+    //通过员工编号来查询员工信息
+    @RequestMapping(value = "/selectAdminById", method = RequestMethod.GET)
+    @ResponseBody
+    public Emp AdminById(Integer emp_id){
+        Emp emp = adminService.selectAdminById(emp_id);
+        if (emp != null){
+            return emp;
+        }else {
+            return null;
+        }
+    }
+
+    @RequestMapping(value = "/updateAdmin", method = RequestMethod.POST)
+    @ResponseBody
+    public String updateAdmin(Emp emp){
+        int count = adminService.updateAdmin(emp);
+        if (count > 0){
+            return "ok";
+        }else{
+            return "fail";
+        }
+    }
+
+    @RequestMapping(value = "/create" ,method = RequestMethod.POST)
+    @ResponseBody
+    public String createAdmin(Emp emp){
+        int count = adminService.insertAdmin(emp);
+        if (count > 0){
+            return "successful";
+        }else {
+            return "fail";
+        }
+    }
+
+    @RequestMapping("/delete")
+    @ResponseBody
+    public String deleteEmp(Integer emp_id){
+        int count = adminService.deleteEmp(emp_id);
+        if (count > 0){
+            return "ok";
+        }else{
+            return "false";
+        }
+    }
+}

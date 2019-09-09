@@ -1,0 +1,54 @@
+<%--
+  Created by IntelliJ IDEA.
+  User: Administrator
+  Date: 2019/7/22
+  Time: 18:57
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>员工考勤管理系统</title>
+
+    <style>
+        .div{
+            background-color: #337ab7;
+        }
+    </style>
+</head>
+<body>
+
+<%@include file="../common/emp_comm.jsp"%>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-2" style=" background-color: #337ab7;">
+            <div class="row"></div>
+            <div class="row"></div>
+        </div>
+        <div class="col-md-2" style=" background-color: #337ab7;">
+            <div class="row"></div>
+            <div class="row"></div>
+        </div>
+        <div class="col-md-2" style=" background-color: #337ab7;">
+            <div class="row"></div>
+            <div class="row"></div>
+        </div>
+        <div class="col-md-2" style=" background-color: #337ab7;">
+            <div class="row"></div>
+            <div class="row"></div>
+        </div>
+        <div class="col-md-2" style=" background-color: #337ab7;">
+            <div class="row"></div>
+            <div class="row"></div>
+        </div>
+        <div class="col-md-2" style=" background-color: #337ab7;">
+            <div class="row"></div>
+            <div class="row"></div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

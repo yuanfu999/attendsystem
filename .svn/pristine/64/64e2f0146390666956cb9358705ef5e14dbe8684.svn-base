@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!-- 扫描org.fkit包下面的java文件，有Spring的相关注解的类，则把这些类注册为Spring的bean -->
+    <context:component-scan base-package="com.aboluo.attend"/>
+
+    <!-- 启用支持annotation注解方式事务管理 -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <aop:aspectj-autoproxy/>
+
+    <import resource="spring-mybatis.xml"/>
+    <import resource="spring-mvc.xml"/>
+</beans>

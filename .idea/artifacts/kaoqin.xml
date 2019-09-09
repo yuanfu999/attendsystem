@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="kaoqin">
+    <output-path>$PROJECT_DIR$/target/atdm/artifacts/kaoqin</output-path>
+    <root id="archive" name="kaoqin.war">
+      <element id="artifact" artifact-name="atdm" />
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="Maven: org.apache.tomcat:tomcat-servlet-api:8.0.47" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>

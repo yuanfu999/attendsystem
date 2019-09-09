@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aboluo.attend.dao.EmpDao">
+
+    <sql id="table_name">emp</sql>
+    <sql id="emp_field">emp_id, dept, emp_name, stu_id, gender, tel, address,password, disable</sql>
+    <sql id = "emp_check">emp_id, dept, emp_name, stu_id, gender, tel, address,password, disable,level</sql>
+    <resultMap id="empResultMap" type="com.aboluo.attend.pojo.Emp">
+        <id property="emp_id" column="emp_id"/>
+        <result property="dept" column="dept"/>
+        <result property="emp_name" column="emp_name"/>
+        <result property="gender" column="gender"/>
+        <result property="tel" column="tel"/>
+        <result property="address" column="address"/>
+        <result property="disable" column="disable"/>
+        <result property="password" column="password"/>
+    </resultMap>
+
+    <insert id="insertEmp" parameterType="com.aboluo.attend.pojo.Emp">
+        insert into <include refid="table_name"/>
+        (emp_id, dept, emp_name, stu_id, gender, tel, address)
+        value (#{emp_id}, #{dept}, #{emp_name}, #{stu_id}, #{gender}, #{tel}, #{address})
+    </insert>
+
+    <delete id="deleteEmp" parameterType="int">
+        delete from <include refid="table_name"/>
+        where emp_id = #{emp_id}
+    </delete>
+
+    <update id="updateEmp" parameterType="com.aboluo.attend.pojo.Emp">
+        update <include refid="table_name"/>
+        set   emp_name=#{emp_name},dept=#{dept}, stu_id=#{stu_id}, gender=#{gender}, tel=#{tel}, address=#{address}, disable=#{disable},password=#{password}
+        where emp_id=#{emp_id}
+    </update>
+
+    <!--注册-->
+    <insert id="register"  parameterType="com.aboluo.attend.pojo.Emp">
+        insert into <include refid="table_name"/>
+        (emp_id, dept, emp_name, stu_id, gender, tel, address)
+        value (#{emp_id}, #{dept}, #{emp_name}, #{stu_id}, #{gender}, #{tel}, #{address})
+    </insert>
+
+    <!--核对员工信息-->
+    <select id="checkEmp" resultType="com.aboluo.attend.pojo.Emp">
+        select <include refid="emp_check"/> from <include refid="table_name"/>
+        where emp_name=#{emp_name} or emp_id=#{emp_id}
+    </select>
+
+    <!--通过员工编号获取员工信息-->
+    <select id="selectEmpById" parameterType="int" resultType="com.aboluo.attend.pojo.Emp">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        where emp_id=#{emp_id}
+    </select>
+
+    <!--分页获取员工信息-->
+    <select id="selectEmpByPage" resultMap="empResultMap" parameterType="map">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        where level = 3
+        ORDER BY emp_id desc limit  #{start_index}, #{page_size}
+    </select>
+
+    <!--获取所有员工-->
+    <select id="selectAllEmp" resultMap="empResultMap">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        where level = 3
+        ORDER BY emp_id desc
+
+    </select>
+
+    <!--获取员工信息总条数-->
+    <select id="selectEmpCount" resultType="int">
+        select count(emp_id) emp_count from <include refid="table_name"/>
+        where level = 3
+    </select>
+
+    <!--条件搜索获取总记录数-->
+    <select id="searchEmpCount" resultType="int">
+        select count(emp_id) as emp_count from <include refid="table_name"/>
+        where level = 3
+        <choose>
+            <when test="(dept != null or dept != '') and (gender == null or gender == '') and  (disable == null or disable == '')">
+                and dept like concat('%', #{dept}, '%')
+            </when>
+            <when test="(dept == null or dept == '') and (gender != null or gender != '') and  (disable == null or disable == '')">
+                and gender = #{gender}
+            </when>
+            <when test="(dept == null or dept == '') and (gender == null or gender == '') and  (disable != null or disable != '')">
+                and disable = #{disable}
+            </when>
+            <when test="(dept != null or dept != '') and (gender != null or gender != '') and  (disable == null or disable == '')">
+                and dept like concat('%', #{dept}, '%')  and gender = #{gender}
+            </when>
+            <when test="(dept != null or dept != '') and (gender == null or gender == '') and  (disable != null or disable != '')">
+                and dept like concat('%', #{dept}, '%')  and disable = #{disable}
+            </when>
+            <when test="(dept == null or dept == '') and (gender != null or gender != '') and  (disable != null or disable != '')">
+                and gender = #{gender}  and disable = #{disable}
+            </when>
+            <otherwise>
+                and dept like concat('%', #{dept}, '%')  and gender = #{gender} and disable = #{disable}
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--条件搜索获取员工信息-->
+    <select id="searchByCondition"  resultMap="empResultMap">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        where level = 3
+        <choose>
+            <when test="(dept != null or dept != '') and (gender == null or gender == '') and  (disable == null or disable == '')">
+                and dept like concat('%', #{dept}, '%')
+            </when>
+            <when test="(dept == null or dept == '') and (gender != null or gender != '') and  (disable == null or disable == '')">
+                and gender = #{gender}
+            </when>
+            <when test="(dept == null or dept == '') and (gender == null or gender == '') and  (disable != null or disable != '')">
+                and disable = #{disable}
+            </when>
+            <when test="(dept != null or dept != '') and (gender != null or gender != '') and  (disable == null or disable == '')">
+                and dept like concat('%', #{dept}, '%')  and gender = #{gender}
+            </when>
+            <when test="(dept != null or dept != '') and (gender == null or gender == '') and  (disable != null or disable != '')">
+                and dept like concat('%', #{dept}, '%')  and disable = #{disable}
+            </when>
+            <when test="(dept == null or dept == '') and (gender != null or gender != '') and  (disable != null or disable != '')">
+                and gender = #{gender}  and disable = #{disable}
+            </when>
+            <otherwise>
+                and dept like concat('%', #{dept}, '%')  and gender = #{gender} and disable = #{disable}
+            </otherwise>
+        </choose>
+        ORDER BY emp_id desc
+    </select>
+
+    <!--模糊查询员工信息-->
+    <select id="searchByContent" resultMap="empResultMap">
+        select <include refid="emp_field"/> from <include refid="table_name"/> as e
+        where level = 3
+        and
+        <if test="content != null and content != ''">
+            concat(e.emp_id, e.dept, e.emp_name, IFNULL(e.stu_id, ""), IFNULL(e.gender,""), IFNULL(e.tel,""), IFNULL(e.address,""),e.password) LIKE CONCAT ('%', #{content},'%')
+        </if>
+        ORDER BY emp_id desc
+    </select>
+
+    <!--获取模糊查询的总数-->
+    <select id="getSearchCount" resultType="int">
+        select count(emp_id) from <include refid="table_name"/> as e
+        where level = 3
+        and
+        <if test="content != null and content != ''">
+            concat(e.emp_id, e.dept, e.emp_name, IFNULL(e.stu_id, ""), IFNULL(e.gender,""), IFNULL(e.tel,""), IFNULL(e.address,""),e.password) LIKE CONCAT ('%', #{content},'%')
+        </if>
+    </select>
+
+    <!--获取重复工号总数 -->
+    <select id="findEmp_id" resultType="int">
+        select count(emp_id) from  <include refid="table_name"/>
+        where emp_id = #{emp_id}
+    </select>
+
+    <!--模糊查询获取总数-->
+    <select id="getByContentCount" resultType="int">
+        select count(emp_id) from <include refid="table_name"/> as e
+        where level = 3
+        and
+        <if test="content != null and content != ''">
+            concat(e.dept, IFNULL(e.gender,""), e.disable) LIKE CONCAT ('%', #{content},'%')
+        </if>
+    </select>
+
+
+</mapper>

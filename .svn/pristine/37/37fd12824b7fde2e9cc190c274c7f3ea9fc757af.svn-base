@@ -1,0 +1,11 @@
+db.driverClassName=com.mysql.cj.jdbc.Driver
+db.url=jdbc:mysql://localhost:3306/bgm?useSSL=false&useUnicode=true&characterEncoding=UTF8&serverTimezone=GMT
+db.username=root
+db.password=root
+db.initialSize=20
+db.maxActive=50
+db.maxIdle=20
+db.minIdle=10
+db.maxWait=10
+db.defaultAutoCommit=true
+db.minEvictableIdleTimeMillis=3600000

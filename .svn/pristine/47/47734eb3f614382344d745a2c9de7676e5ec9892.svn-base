@@ -1,0 +1,45 @@
+package com.aboluo.attend.dao;
+
+import com.aboluo.attend.pojo.Emp;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Map;
+
+public interface AdminDao {
+
+    List<Emp> get_AdminByPage(Map<String, Integer> index_map);
+
+    /*获取员工信息总条数*/
+    int selectEmpCount();
+    /*获取管理员信息条数*/
+    int selectAdminCount();
+
+    int selectAdCount();
+
+    Emp selectAdminById(int emp_id);
+
+    int updateAdmin(Emp emp);
+
+    int insertAdmin(Emp emp);
+
+    int deleteEmp(int emp_id);
+
+    /*分页获取员工信息*/
+    List<Emp> selectAdminByPage(Map<String, Integer> index_map);
+
+    /*修改管理员个人信息*/
+    int updateOwnInfo(Emp emp);
+
+    /*修改密码*/
+    int changePas(Emp emp);
+
+    List<Emp> searchAdByContent(@Param("content") String content);
+
+    int getAdSearchCount(@Param("content") String content);
+
+    //条件查询
+    List<Emp> searchAdminByCondition(@Param("dept") String dept, @Param("gender") String gender, @Param("disable") Integer disable, @Param("page_info") String page_info);
+
+    int getAdminCountByCondition(@Param("dept") String dept, @Param("gender") String gender, @Param("disable") Integer disable, @Param("page_info") String page_info);
+}

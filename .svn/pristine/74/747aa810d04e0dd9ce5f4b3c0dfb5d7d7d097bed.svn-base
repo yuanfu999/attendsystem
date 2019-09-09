@@ -1,0 +1,18 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="attendce">
+    <output-path>$PROJECT_DIR$/classes/artifacts/attendce</output-path>
+    <root id="archive" name="attendce.war">
+      <element id="artifact" artifact-name="atdm" />
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="Maven: org.apache.tomcat:tomcat-servlet-api:8.0.47" />
+          <element id="library" level="project" name="Maven: org.codehaus.jackson:jackson-mapper-asl:1.9.13" />
+          <element id="library" level="project" name="Maven: org.codehaus.jackson:jackson-core-asl:1.9.13" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-core:2.9.8" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.9.8" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.9.0" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>

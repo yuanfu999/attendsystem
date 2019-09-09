@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aboluo.attend.dao.AttendanceDao">
+
+    <sql id="table_name">attendance</sql>
+
+    <resultMap id="atdResultMap" type="com.aboluo.attend.pojo.Attendance">
+        <id property="emp_id" column="emp_id"/>
+        <result property="dept" column="dept"/>
+        <result property="emp_name" column="emp_name"/>
+        <result property="late_num" column="late_num"/>
+        <result property="leave_early_num" column="leave_early_num"/>
+        <result property="attend_day" column="attend_day"/>
+        <result property="absent_day" column="absent_day"/>
+        <result property="ask_leave_day" column="ask_leave_day"/>
+    </resultMap>
+
+    <!--分页获取考勤信息,默认第一页-->
+    <select id="getAttendByPage" resultMap="atdResultMap" parameterType="map">
+        select * from <include refid="table_name"/>
+        order BY emp_id asc limit  #{start_index}, #{page_size}
+    </select>
+
+    <!--获取考勤信息总条数-->
+    <select id="getAllAtdsCount" resultType="int">
+        select count(emp_id) from <include refid="table_name"/>
+    </select>
+
+    <!--插入考勤记录-->
+    <insert id="insertAttendance"  parameterType="com.aboluo.attend.pojo.Attendance">
+        insert into <include refid="table_name"/>
+        (emp_id, dept, emp_name, late_num, leave_early_num, attend_day, absent_day, ask_leave_day)
+        value (#{emp_id}, #{dept}, #{emp_name}, #{late_num}, #{leave_early_num}, #{attend_day}, #{absent_day}, #{ask_leave_day})
+    </insert>
+
+    <!--通过员工编号查询考勤记录-->
+    <select id="selectAttendById" parameterType="int" resultType="com.aboluo.attend.pojo.Attendance">
+        select * from <include refid="table_name"/>
+        where emp_id=#{emp_id}
+    </select>
+
+    <!--删除考勤记录-->
+    <delete id="deleteAttendance" parameterType="int">
+        delete from <include refid="table_name"/>
+        where emp_id = #{emp_id}
+    </delete>
+
+    <!--更新考勤记录-->
+    <update id="updateAttendance" parameterType="com.aboluo.attend.pojo.Attendance">
+        update <include refid="table_name"/>
+        set   emp_name=#{emp_name},dept=#{dept}, late_num=#{late_num}, leave_early_num=#{leave_early_num}, attend_day=#{attend_day}, absent_day=#{absent_day},ask_leave_day=#{ask_leave_day}
+        where emp_id=#{emp_id}
+    </update>
+
+    <!--条件搜索考勤记录-->
+    <select id="searchByCondition"  resultMap="atdResultMap">
+        select * from <include refid="table_name"/>
+        <where>
+            <if test="(dept != null or dept != '')">
+                and dept like concat('%', #{dept}, '%')
+            </if>
+        </where>
+        ORDER BY emp_id asc
+    </select>
+
+    <!--条件搜索查询到的总记录数-->
+    <select id="searchByConditionCount"  resultType="int">
+        select count(emp_id) from <include refid="table_name"/>
+        <where>
+            <if test="(dept != null or dept != '')">
+                and dept like concat('%', #{dept}, '%')
+            </if>
+        </where>
+    </select>
+
+    <!--模糊查询考勤记录-->
+    <select id="searchByContent" resultMap="atdResultMap">
+        select * from <include refid="table_name"/> as e
+        <where>
+            <if test="content != null and content != ''">
+                and concat(e.emp_id, e.dept, e.emp_name) LIKE CONCAT ('%', #{content},'%')
+            </if>
+        </where>
+        ORDER BY emp_id asc
+    </select>
+
+    <!--获取模糊查询的总数-->
+    <select id="getSearchCount" resultType="int">
+        select count(emp_id) from <include refid="table_name"/> as e
+        <where>
+            <if test="content != null and content != ''">
+                and concat(e.emp_id, e.dept, e.emp_name) LIKE CONCAT ('%', #{content},'%')
+            </if>
+        </where>
+    </select>
+
+
+
+</mapper>

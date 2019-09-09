@@ -1,0 +1,213 @@
+package com.aboluo.attend.controller;
+
+import com.aboluo.attend.pojo.Emp;
+import com.aboluo.attend.service.AdminService;
+import com.aboluo.attend.util.AttendPage;
+import com.aboluo.attend.util.Page;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Controller
+@RequestMapping(value = "super")
+public class SupAdmController {
+   @Autowired
+    private AdminService adminService;
+    //进入超级管理员页面
+    @RequestMapping(value = "/supadmin",method = RequestMethod.GET)
+    public String adminList(Model model){
+        Page page = new Page();
+        int start_index = 1;
+        int page_size = 7;
+        Map<String, Integer> index_map = new HashMap<>();
+        index_map.put("start_index", start_index-1);
+        index_map.put("page_size", page_size);
+        List<Emp> empList = adminService.selectAdminByPage(index_map);
+        int total = adminService.selectAdminCount();
+        page.setNow_page(start_index);
+        page.setTotal(total);
+        page.setPage_size(page_size);
+        page.setEmps(empList);
+        model.addAttribute("page" ,page);
+        return "/supAdmin/supAdmin";
+    }
+
+    //分页获取权限管理信息（超级管理员权限）
+    @RequestMapping(value = "/supadmin/{page}", method = RequestMethod.GET)
+    @ResponseBody
+    public Page AllList(@PathVariable(name = "page") Integer index){
+        Page page = new Page();
+        int page_size = 7;
+        int start_index = (index-1)*page_size;
+        Map<String, Integer> index_map = new HashMap<>();
+        index_map.put("start_index", start_index);
+        index_map.put("page_size", page_size);
+        List<Emp> empList = adminService.selectAdminByPage(index_map);
+        int total = adminService.selectAdminCount();
+        page.setNow_page(index);
+        page.setTotal(total);
+        page.setPage_size(page_size);
+        page.setEmps(empList);
+        System.out.println(empList);
+        return page;
+    }
+
+    //权限管理条件搜索结果分页
+    @RequestMapping(value = "/srch_result", method = RequestMethod.GET)
+    @ResponseBody
+    public Page searchRusult(@RequestParam("dept") String dept, @RequestParam("gender") String gender,
+                             @RequestParam(value = "disable") Integer disable, @RequestParam(value = "start_index", defaultValue = "1") Integer start,
+                             HttpServletRequest request) throws UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");
+        List<Emp> emps = adminService.searchByAdCondition(dept, gender, disable);
+        int total = adminService.searchByAdCount(dept, gender, disable);
+        Page page = new Page();
+        page.setNow_page(start);
+        page.setTotal(total);
+        page.setPage_size(7);
+        page.setAll_emps(emps);
+        List<Emp> emps_page = page.emp_page();
+        page.setEmps(emps_page);
+        return page;
+    }
+
+    //分页获取管理员信息
+    @RequestMapping(value = "/getadmsg/{page}", method = RequestMethod.GET)
+    @ResponseBody
+    public Page AdList(@PathVariable(name = "page") Integer index){
+        Page page = new Page();
+        int page_size = 7;
+        int start_index = (index-1)*page_size;
+        Map<String, Integer> index_map = new HashMap<>();
+        index_map.put("start_index", start_index);
+        index_map.put("page_size", page_size);
+        List<Emp> empList = adminService.get_AdminByPage(index_map);
+        int total = adminService.selectAdCount();
+        page.setNow_page(index);
+        page.setTotal(total);
+        page.setPage_size(page_size);
+        page.setEmps(empList);
+        return page;
+    }
+    //获取管理员信息
+    @RequestMapping(value = "/getadmsg",method = RequestMethod.GET)
+    public String getadmin(Model model){
+        Page page = new Page();
+        int start_index = 1;
+        int page_size = 7;
+        Map<String, Integer> index_map = new HashMap<>();
+        index_map.put("start_index", start_index-1);
+        index_map.put("page_size", page_size);
+        List<Emp> empList = adminService.get_AdminByPage(index_map);
+        int total = adminService.selectAdCount();
+        page.setNow_page(start_index);
+        page.setTotal(total);
+        page.setPage_size(page_size);
+        page.setEmps(empList);
+        model.addAttribute("page" ,page);
+        return "/supAdmin/getadmsg";
+    }
+
+    //管理员信息的模糊查询
+    @RequestMapping(value = "suad_mh_srch", method = RequestMethod.GET)
+    @ResponseBody
+    public Page admh_search(@RequestParam("srch_content") String content, @RequestParam(value = "page", defaultValue = "1") Integer index,
+                            HttpServletRequest request) throws UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");
+        Page page = new Page();
+        List<Emp> all_emps = adminService.searchAdByContent(content);
+        int total =adminService.getAdSearchCount(content);
+        page.setAll_emps(all_emps);
+        page.setTotal(total);
+        page.setPage_size(7);
+        page.setNow_page(index);
+        List<Emp> emps = page.emp_page();
+        page.setEmps(emps);
+        return page;
+    }
+
+    //管理员信息条件查询
+    @RequestMapping(value = "/tj_srch", method = RequestMethod.GET)
+    @ResponseBody
+    public Page searchEmpsByConditinon(@RequestParam("dept") String dept, @RequestParam("gender") String gender,
+                                       @RequestParam(value = "disable") Integer disable, @RequestParam(value = "start_index", defaultValue = "1") Integer start,
+                                       @RequestParam("flag") Integer flag,HttpServletRequest request) throws UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");
+        String page_info = "";
+        if (flag == 1){
+            page_info = "author";
+        }else{
+            page_info = "admin";
+        }
+        List<Emp> emps = adminService.searchAdminByCondition(dept, gender, disable, page_info);
+        int total = adminService.getAdminCountByCondition(dept, gender, disable, page_info);
+        Page page = new Page();
+        page.setNow_page(start);
+        page.setTotal(total);
+        page.setPage_size(7);
+        page.setAll_emps(emps);
+        List<Emp> emps_page = page.emp_page();
+        page.setEmps(emps_page);
+        return page;
+    }
+
+
+    //通过员工编号来查询员工信息
+    @RequestMapping(value = "/selectAdminById", method = RequestMethod.GET)
+    @ResponseBody
+    public Emp AdminById(Integer emp_id){
+        Emp emp = adminService.selectAdminById(emp_id);
+        if (emp != null){
+            return emp;
+        }else {
+            return null;
+        }
+    }
+
+    //超级管理员个人信息
+    @RequestMapping(value = "/supAdInfo",method = RequestMethod.GET)
+    public String adminInfo(){
+        return "/supAdmin/supAdInfo";
+    }
+
+    @RequestMapping(value = "/updateAdmin", method = RequestMethod.POST)
+    @ResponseBody
+    public String updateAdmin(Emp emp){
+        int count = adminService.updateAdmin(emp);
+        if (count > 0){
+            return "ok";
+        }else{
+            return "fail";
+        }
+    }
+
+    @RequestMapping(value = "/create" ,method = RequestMethod.POST)
+    @ResponseBody
+    public String createAdmin(Emp emp){
+        int count = adminService.insertAdmin(emp);
+        if (count > 0){
+            return "successful";
+        }else {
+            return "fail";
+        }
+    }
+
+    @RequestMapping("/delete")
+    @ResponseBody
+    public String deleteEmp(Integer emp_id){
+        int count = adminService.deleteEmp(emp_id);
+        System.out.println("count:"+count);
+        if (count > 0){
+            return "ok";
+        }else{
+            return "false";
+        }
+    }
+}

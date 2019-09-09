@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aboluo.attend.dao.AdminDao">
+
+    <sql id="table_name">emp</sql>
+    <sql id="emp_field">emp_id, dept, emp_name, stu_id,gender,tel,address,level,password,disable</sql>
+    <resultMap id="empResultMap" type="com.aboluo.attend.pojo.Emp">
+        <id property="emp_id" column="emp_id"/>
+        <result property="dept" column="dept"/>
+        <result property="emp_name" column="emp_name"/>
+        <result property="stu_id" column="stu_id"/>
+        <result property="gender" column="gender"/>
+        <result property="tel" column="tel"/>
+        <result property="address" column="address"/>
+        <result property="level" column="level"/>
+        <result property="disable" column="disable"/>
+        <result property="password" column="password"/>
+    </resultMap>
+    <insert id="insertAdmin" parameterType="com.aboluo.attend.pojo.Emp">
+        insert into <include refid="table_name"/>
+        (emp_id, dept, emp_name, stu_id, gender, tel, address,disable,level)
+        value (#{emp_id}, #{dept}, #{emp_name}, #{stu_id}, #{gender}, #{tel}, #{address},#{disable},#{level})
+    </insert>
+
+    <update id="updateAdmin" parameterType="com.aboluo.attend.pojo.Emp">
+        update <include refid="table_name"/> set emp_name=#{emp_name},dept=#{dept}, stu_id=#{stu_id}, gender=#{gender}, tel=#{tel}, address=#{address},disable=#{disable},password=#{password}
+        ,level=#{level}
+        where emp_id=#{emp_id}
+    </update>
+
+    <delete id="deleteEmp" parameterType="int">
+        delete from <include refid="table_name"/>
+        where emp_id = #{emp_id}
+    </delete>
+
+    <!--获取所有员工-->
+    <select id="selectAllEmp" resultMap="empResultMap">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        ORDER BY emp_id desc
+    </select>
+
+    <!--获取员工信息总条数-->
+    <select id="selectEmpCount" resultType="int">
+        select count(emp_id) emp_count from <include refid="table_name"/>
+        where level=2 or level = 3
+    </select>
+
+    <!--分页获取员工信息-->
+    <select id="selectAdminByPage" resultMap="empResultMap" parameterType="map">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        where level=3 or level = 2
+        ORDER BY level asc ,emp_id asc limit  #{start_index}, #{page_size}
+    </select>
+
+    <!--改变用户权限-->
+
+    <!--分页获取管理员信息 -->
+    <select id="get_AdminByPage" resultMap="empResultMap" parameterType="map">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        where level=2
+        ORDER BY emp_id asc limit  #{start_index}, #{page_size}
+    </select>
+
+    <!--获取管理员信息总条数-->
+    <select id="selectAdminCount" resultType="int">
+        select count(emp_id) emp_count from <include refid="table_name"/>
+        where level=2 or level =3
+    </select>
+
+    <!--获取管理员信息总条数-->
+    <select id="selectAdCount" resultType="int">
+        select count(emp_id) emp_count from <include refid="table_name"/>
+        where level=2
+    </select>
+
+    <!--通过员工编号获取员工信息-->
+    <select id="selectAdminById" parameterType="int" resultType="com.aboluo.attend.pojo.Emp">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        where emp_id=#{emp_id}
+    </select>
+
+    <!--获取管理员模糊查询的总数-->
+    <select id="getAdSearchCount" resultType="int">
+        select count(emp_id) from <include refid="table_name"/> as e
+        where level=2
+        and
+        <if test="content != null and content != ''">
+            concat(e.emp_id, e.dept, e.emp_name, IFNULL(e.stu_id, ""), IFNULL(e.gender,""), IFNULL(e.tel,""), IFNULL(e.address,""),e.password) LIKE CONCAT ('%', #{content},'%')
+        </if>
+    </select>
+
+    <!--模糊查询管理员信息-->
+    <select id="searchAdByContent" resultMap="empResultMap">
+        select emp_id,stu_id,dept,emp_name,password,gender,tel,level,disable from <include refid="table_name"/> as e
+        where level=2
+        and
+        <if test="content != null and content != ''">
+            concat(e.emp_id, e.dept, e.emp_name, IFNULL(e.stu_id, ""), IFNULL(e.gender,""), IFNULL(e.tel,""), IFNULL(e.address,""),e.password) LIKE CONCAT ('%', #{content},'%')
+        </if>
+        ORDER BY emp_id desc
+    </select>
+
+    <!--模糊查询权限管理信息-->
+    <select id="searchPoByContent" resultMap="empResultMap">
+        select emp_id,stu_id,dept,emp_name,password,gender,tel,level,disable from <include refid="table_name"/> as e
+        where level=2
+        and
+        <if test="content != null and content != ''">
+            concat(e.emp_id, e.dept, e.emp_name, IFNULL(e.stu_id, ""), IFNULL(e.gender,""), IFNULL(e.tel,""), IFNULL(e.address,""),e.password) LIKE CONCAT ('%', #{content},'%')
+        </if>
+        or
+        level=3
+        and
+        <if test="content != null and content != ''">
+            concat(e.emp_id, e.dept, e.emp_name, IFNULL(e.stu_id, ""), IFNULL(e.gender,""), IFNULL(e.tel,""), IFNULL(e.address,""),e.password) LIKE CONCAT ('%', #{content},'%')
+        </if>
+        ORDER BY emp_id desc
+    </select>
+
+    <!--获取权限管理的总数-->
+    <select id="getPoSearchCount" resultType="int">
+        select count(emp_id) from <include refid="table_name"/> as e
+        where (level=2 or level =3) and
+        <if test="content != null and content != ''">
+            concat(e.emp_id, e.dept, e.emp_name, IFNULL(e.stu_id, ""), IFNULL(e.gender,""), IFNULL(e.tel,""), IFNULL(e.address,""),e.password) LIKE CONCAT ('%', #{content},'%')
+        </if>
+    </select>
+
+    <!--修改管理员个人信息-->
+    <update id="updateOwnInfo" parameterType="com.aboluo.attend.pojo.Emp">
+        update <include refid="table_name"/> set emp_name=#{emp_name},dept=#{dept}, gender=#{gender}, tel=#{tel}, address=#{address}
+        where emp_id=#{emp_id}
+    </update>
+
+    <!--修改密码 -->
+    <update id="changePas" parameterType="com.aboluo.attend.pojo.Emp">
+        update <include refid="table_name"/>
+        set password=#{password}
+        where emp_id=#{emp_id} ;
+    </update>
+
+    <!--条件搜索获取权限管理员工信息-->
+    <select id="searchByAdCondition"  resultMap="empResultMap">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        where 1=1
+       <!-- <choose>
+            <when test="page_info == 'admin'">
+                and level = 2 or level = 3
+            </when>
+            <otherwise>
+                and level = 2 or level = 3
+            </otherwise>
+        </choose>-->
+        <choose>
+            <when test="(dept != null or dept != '') and (gender == null or gender == '') and  (disable == null or disable == '')">
+                and dept like concat('%', #{dept}, '%') and level = 3
+                or
+                dept like concat('%', #{dept}, '%') and level = 2
+            </when>
+            <when test="(dept != null or dept != '') and (gender != null or gender != '') and  (disable == null or disable == '')">
+                and dept like concat('%', #{dept}, '%')  and gender = #{gender} and level = 3
+                or
+                dept like concat('%', #{dept}, '%')  and gender = #{gender} and level = 2
+            </when>
+            <when test="(dept != null or dept != '') and (gender == null or gender == '') and  (disable != null or disable != '')">
+                and dept like concat('%', #{dept}, '%')  and disable = #{disable} and level = 3
+                or
+                dept like concat('%', #{dept}, '%')  and disable = #{disable} and level = 2
+            </when>
+            <when test="(dept == null or dept == '') and (gender != null or gender != '') and  (disable == null or disable == '')">
+                and gender = #{gender} and level = 3
+                or
+                gender = #{gender} and level = 2
+            </when>
+            <when test="(dept == null or dept == '') and (gender == null or gender == '') and  (disable != null or disable != '')">
+                and disable = #{disable} and level = 3
+                or
+                disable = #{disable} and level = 2
+            </when>
+
+            <when test="(dept == null or dept == '') and (gender != null or gender != '') and  (disable != null or disable != '')">
+                and gender = #{gender}  and disable = #{disable} and level = 3
+                or
+                gender = #{gender}  and disable = #{disable} and level = 2
+            </when>
+            <otherwise>
+                and dept like concat('%', #{dept}, '%')  and gender = #{gender} and disable = #{disable} and level = 3
+                or
+                dept like concat('%', #{dept}, '%')  and gender = #{gender} and disable = #{disable} and level = 2
+            </otherwise>
+        </choose>
+        ORDER BY level asc
+    </select>
+
+    <!--条件搜索获取权限管理总记录数-->
+    <select id="searchByAdCount" resultType="int">
+        select count(emp_id) as emp_count from <include refid="table_name"/>
+        where 1=1
+        <!--<choose>
+            <when test="page_info == 'admin'">
+                and level = 2 or level = 3
+            </when>
+            <otherwise>
+                and level = 2 or level = 3
+            </otherwise>
+        </choose>-->
+        <choose>
+            <when test="(dept != null or dept != '') and (gender == null or gender == '') and  (disable == null or disable == '')">
+                and dept like concat('%', #{dept}, '%') and level = 3
+                or
+                dept like concat('%', #{dept}, '%') and level = 2
+            </when>
+            <when test="(dept != null or dept != '') and (gender != null or gender != '') and  (disable == null or disable == '')">
+                and dept like concat('%', #{dept}, '%')  and gender = #{gender} and level = 3
+                or
+                dept like concat('%', #{dept}, '%')  and gender = #{gender} and level = 2
+            </when>
+            <when test="(dept != null or dept != '') and (gender == null or gender == '') and  (disable != null or disable != '')">
+                and dept like concat('%', #{dept}, '%')  and disable = #{disable} and level = 3
+                or
+                dept like concat('%', #{dept}, '%')  and disable = #{disable} and level = 2
+            </when>
+            <when test="(dept == null or dept == '') and (gender != null or gender != '') and  (disable == null or disable == '')">
+                and gender = #{gender} and level = 3
+                or
+                gender = #{gender} and level = 2
+            </when>
+            <when test="(dept == null or dept == '') and (gender == null or gender == '') and  (disable != null or disable != '')">
+                and disable = #{disable} and level = 3
+                or
+                disable = #{disable} and level = 2
+            </when>
+
+            <when test="(dept == null or dept == '') and (gender != null or gender != '') and  (disable != null or disable != '')">
+                and gender = #{gender}  and disable = #{disable} and level = 3
+                or
+                gender = #{gender}  and disable = #{disable} and level = 2
+            </when>
+            <otherwise>
+                and dept like concat('%', #{dept}, '%')  and gender = #{gender} and disable = #{disable} and level = 3
+                or
+                dept like concat('%', #{dept}, '%')  and gender = #{gender} and disable = #{disable} and level = 2
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--条件搜索获取管理员总记录数-->
+    <select id="getAdminCountByCondition" resultType="int">
+        select count(emp_id) as emp_count from <include refid="table_name"/>
+        where 1=1
+        <choose>
+            <when test="page_info == 'admin'">
+                and level = 2
+            </when>
+            <otherwise>
+                and level = 2 or level = 3
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="(dept != null or dept != '') and (gender == null or gender == '') and  (disable == null or disable == '')">
+                and dept like concat('%', #{dept}, '%')
+            </when>
+            <when test="(dept == null or dept == '') and (gender != null or gender != '') and  (disable == null or disable == '')">
+                and gender = #{gender}
+            </when>
+            <when test="(dept == null or dept == '') and (gender == null or gender == '') and  (disable != null or disable != '')">
+                and disable = #{disable}
+            </when>
+            <when test="(dept != null or dept != '') and (gender != null or gender != '') and  (disable == null or disable == '')">
+                and dept like concat('%', #{dept}, '%')  and gender = #{gender}
+            </when>
+            <when test="(dept != null or dept != '') and (gender == null or gender == '') and  (disable != null or disable != '')">
+                and dept like concat('%', #{dept}, '%')  and disable = #{disable}
+            </when>
+            <when test="(dept == null or dept == '') and (gender != null or gender != '') and  (disable != null or disable != '')">
+                and gender = #{gender}  and disable = #{disable}
+            </when>
+            <otherwise>
+                and dept like concat('%', #{dept}, '%')  and gender = #{gender} and disable = #{disable}
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--条件搜索获取管理员信息-->
+    <select id="searchAdminByCondition"  resultMap="empResultMap">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        where 1=1
+        <choose>
+            <when test="page_info == 'admin'">
+                and level = 2
+            </when>
+            <otherwise>
+                and level = 2 or level = 3
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="(dept != null or dept != '') and (gender == null or gender == '') and  (disable == null or disable == '')">
+                and dept like concat('%', #{dept}, '%')
+            </when>
+            <when test="(dept == null or dept == '') and (gender != null or gender != '') and  (disable == null or disable == '')">
+                and gender = #{gender}
+            </when>
+            <when test="(dept == null or dept == '') and (gender == null or gender == '') and  (disable != null or disable != '')">
+                and disable = #{disable}
+            </when>
+            <when test="(dept != null or dept != '') and (gender != null or gender != '') and  (disable == null or disable == '')">
+                and dept like concat('%', #{dept}, '%')  and gender = #{gender}
+            </when>
+            <when test="(dept != null or dept != '') and (gender == null or gender == '') and  (disable != null or disable != '')">
+                and dept like concat('%', #{dept}, '%')  and disable = #{disable}
+            </when>
+            <when test="(dept == null or dept == '') and (gender != null or gender != '') and  (disable != null or disable != '')">
+                and gender = #{gender}  and disable = #{disable}
+            </when>
+            <otherwise>
+                and dept like concat('%', #{dept}, '%')  and gender = #{gender} and disable = #{disable}
+            </otherwise>
+        </choose>
+        ORDER BY emp_id desc
+    </select>
+</mapper>

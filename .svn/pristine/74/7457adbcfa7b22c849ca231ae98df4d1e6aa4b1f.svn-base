@@ -1,0 +1,621 @@
+<%--
+  Created by IntelliJ IDEA.
+  User: Administrator
+  Date: 2019/7/19
+  Time: 15:20
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>员工考勤管理系统</title>
+</head>
+
+<body>
+
+<%@include file="../common/admin_comm.jsp"%>
+
+<!-- 员工列表查询部分  start-->
+<div id="page-wrapper">
+
+    <%--搜索部分 start--%>
+    <div class="row">
+
+        <div style="width: 15%;float: left;margin: 5px 0px 5px 20px">
+            <h3><b>搜索查询</b></h3>
+        </div>
+
+        <div style="margin: 20px 5px 15px;float: left;">
+            <form class="form-inline" method="get" action="${pageContext.request.contextPath }/#">
+                <div class="form-group">
+                    <label for="search_dept">所属部门</label>
+                    <select	class="form-control" id="search_dept" name="dept">
+                        <option value="">--请选择--</option>
+                        <option value="智能物联">智能物联</option>
+                        <option value="java大数据">java大数据</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <div style="float: left;margin: 20px 5px 15px;">
+            <button class="btn btn-primary" style="margin: 0 10px 0 20px" id="condition_srch">搜索</button>
+            <button class="btn btn-primary" id="reset">重置</button>
+        </div>
+        <hr width="100%"/>
+    </div>
+    <%--搜索部分 end--%>
+
+    <%--员工信息表格 start--%>
+    <a href="#" class="btn btn-primary" data-toggle="modal"
+       data-target="#newAtdDialog" onclick="clearAtdInfo()">新建</a>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">员工信息列表
+
+                    <div class="input-group custom-search-form" style="width: 25%;float: right;margin: -7px 10px 0px 0px;">
+                        <input type="text" class="form-control"  placeholder="查询内容..." id="search_input">
+                        <span class="input-group-btn">
+							<button class="btn btn-default" type="button" id="mh_srch">
+                                <!--搜索图标-->
+                                <span class="glyphicon glyphicon-search" aria-hidden="true" style="padding: 3px 0 3px 0;"></span>
+                            </button>
+						</span>
+                    </div>
+                </div>
+                <%--数据表格 start--%>
+                <table class="table table-bordered table-striped" id="emp_table" style="text-align: center;font-size: 14px;">
+                    <thead>
+                    <tr>
+                        <th>编号</th>
+                        <th>姓名</th>
+                        <th>部门</th>
+                        <th>迟到(次)</th>
+                        <th>早退(次)</th>
+                        <th>出差(天)</th>
+                        <th>旷工(天)</th>
+                        <th>请假(天)</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <c:forEach items="${page.atds}" var="row">
+                        <tr>
+                            <td>${row.emp_id}</td>
+                            <td>${row.emp_name}</td>
+                            <td>${row.dept}</td>
+                            <td>${row.late_num}</td>
+                            <td>${row.leave_early_num}</td>
+                            <td>${row.attend_day}</td>
+                            <td>${row.absent_day}</td>
+                            <td>${row.ask_leave_day}</td>
+                            <td>
+                                <a href="#" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#editAtdDialog" id="edit_adt" onclick= "editAtdInfo(this, ${row.emp_id})">修改</a>
+                                <a href="#" class="btn btn-danger btn-xs" id="delete_adt" onclick="deleteAtdInfo(this, ${row.emp_id})">删除</a>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                    </tbody>
+                </table>
+                <!-- 数据表格 end -->
+
+            </div>
+            <!-- /.panel -->
+            <!--分页-->
+            <div style="height: 50px;">
+                <div class="col-lg-8" style="margin-top: -10px;font-size: 15px;">
+                    <span >
+                        总共有 <label id="emp_total">${page.total}</label> 条记录,当前为 <label id="now_page"> ${page.now_page} </label> 页,&nbsp&nbsp 跳转至
+                        <input type="text"  id="jump_page_input"/> 页
+                        <button type="button" class="btn btn-primary btn-xs" style="height: 20px;width: auto" onclick="get_jump_page()">跳转</button>
+                    </span>
+                </div>
+                <!-- /.col-lg-12 -->
+                <nav aria-label="Page navigation" style="margin-top: -35px;position: absolute;right:15px;">
+                    <ul class="pagination">
+                        <li>
+                            <a href="#" aria-label="Previous" id="pre" onclick="jump_page(this)">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li><a href="#"  id="li_1" onclick="jump_page(this)">1</a></li>
+                        <li><a href="#" id="more_1" hidden="hidden">...</a></li>
+                        <li><a href="#" id="li_2" hidden="hidden" onclick="jump_page(this)">2</a></li>
+                        <li><a href="#" id="li_3" hidden="hidden" onclick="jump_page(this)">3</a></li>
+                        <li><a href="#" id="li_4" hidden="hidden" onclick="jump_page(this)">4</a></li>
+                        <li><a href="#" id="li_5" hidden="hidden" onclick="jump_page(this)">5</a></li>
+                        <li><a href="#" id="more_2" hidden="hidden">...</a></li>
+                        <li><a href="#" id="li_end" hidden="hidden" onclick="jump_page(this)"></a></li>
+                        <li>
+                            <a href="#" aria-label="Next" id="next" onclick="jump_page(this)">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+</div>
+<!-- 员工表格部分  end-->
+
+<!-- 创建员工模态框 start-->
+<div class="modal fade" id="newAtdDialog" tabindex="-1" role="dialog"
+     aria-labelledby="create_ModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="create_ModalLabel">添加考勤记录</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" id="new_adt_form">
+                    <div class="form-group">
+                        <label for="new_emp_id" class="col-sm-2 control-label">
+                            员工编号
+                        </label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="new_emp_id" placeholder="员工编号" name="emp_id" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_dept" style="float:left;padding:7px 15px 0 27px;">所属部门</label>
+                        <div class="col-sm-10">
+                            <select	class="form-control" id="new_dept"  name="dept">
+                                <option value="">--请选择--</option>
+                                <option value="智能物联">智能物联</option>
+                                <option value="java大数据">java大数据</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="new_emp_name" class="col-sm-2 control-label">员工姓名</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="new_emp_name" placeholder="员工姓名" name="emp_name" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_late_num" class="col-sm-2 control-label">迟到次数</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="new_late_num" placeholder="迟到次数" name="new_late_num" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_leave_early_num" class="col-sm-2 control-label">早退次数</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="new_leave_early_num" placeholder="早退次数" name="leave_early_num" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_attend_day" class="col-sm-2 control-label">出差天数</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="new_attend_day" placeholder="出差天数" name="attend_day" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_absent_day" class="col-sm-2 control-label">旷工天数</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="new_absent_day" placeholder="旷工天数" name="absent_day" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_ask_leave_day" class="col-sm-2 control-label">请假天数</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="new_ask_leave_day" placeholder="请假天数" name="ask_leave_day" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="createAtd()">添加记录</button>
+            </div>
+        </div>
+    </div>
+</div>
+<%--创建新建员工信息模态框 end--%>
+
+
+<%--修改员工信息模态框 start--%>
+<div class="modal fade" id="editAtdDialog" tabindex="-1" role="dialog"
+     aria-labelledby="edit_modalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="edit_modalLabel">修改考勤记录</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" id="edit_adt_form">
+                    <div class="form-group">
+                        <label for="edit_emp_id" class="col-sm-2 control-label">
+                            员工编号
+                        </label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="edit_emp_id" placeholder="员工编号" name="emp_id"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_emp_name" class="col-sm-2 control-label">
+                            员工姓名
+                        </label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="edit_emp_name" placeholder="员工姓名" name="emp_name"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_dept" style="float:left;padding:7px 15px 0 27px;">所属部门</label>
+                        <div class="col-sm-10">
+                            <select	class="form-control" id="edit_dept"  name="dept">
+                                <option value="">--请选择--</option>
+                                <option value="智能物联">智能物联</option>
+                                <option value="java大数据">java大数据</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_late_num" class="col-sm-2 control-label">迟到次数</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="edit_late_num" placeholder="迟到次数" name="new_late_num" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_leave_early_num" class="col-sm-2 control-label">早退次数</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="edit_leave_early_num" placeholder="早退次数" name="leave_early_num" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_attend_day" class="col-sm-2 control-label">出差天数</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="edit_attend_day" placeholder="出差天数" name="attend_day" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_absent_day" class="col-sm-2 control-label">旷工天数</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="edit_absent_day" placeholder="旷工天数" name="absent_day" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_ask_leave_day" class="col-sm-2 control-label">请假天数</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="edit_ask_leave_day" placeholder="请假天数" name="ask_leave_day" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="updateAtdInfo()">修改记录</button>
+            </div>
+        </div>
+    </div>
+</div>
+<%--修改模态框 end--%>
+
+<%--分页 start--%>
+<script type="application/javascript">
+
+    var emp_total = parseInt($("#emp_total").text());
+    var now_page_index = parseInt($("#now_page").text());
+    var page_size = 7;
+    var page_total = emp_total % page_size == 0 ? emp_total/page_size : parseInt(emp_total/page_size) + 1;
+    var search_state = 1;
+
+    /*初始化分页ui*/
+
+    $(function(){
+        init_page();
+    })
+
+    //获取输入跳转的界面，并跳转界面
+    function get_jump_page() {
+        var page = $("#jump_page_input").val();
+
+        if(page > page_total || page < 1){
+            alert("请输入正确的跳转页面!");
+        }else{
+            $("#now_page").text(page);
+            getEmpByPage(page);
+            $("#jump_page_input").val("")
+        }
+    }
+
+    //遍历考勤记录，将数据添置表格中
+    function each_emps(emps) {
+        var table = document.getElementById("emp_table");
+        for (var i=0; i<emps.length; i++){
+            var cells = table.rows[i+1].cells;
+            table.rows[i+1].cells[0].innerText = emps[i]["emp_id"] == undefined ? "" : emps[i]["emp_id"];
+            table.rows[i+1].cells[2].innerText = emps[i]["dept"] == undefined ? "" : emps[i]["dept"];
+            table.rows[i+1].cells[1].innerText = emps[i]["emp_name"] == undefined ? "" : emps[i]["emp_name"] ;
+            table.rows[i+1].cells[3].innerText = emps[i]["late_num"] == undefined ? "" : emps[i]["late_num"];
+            table.rows[i+1].cells[4].innerText = emps[i]["leave_early_num"] == undefined ? "" : emps[i]["leave_early_num"];
+            table.rows[i+1].cells[5].innerText = emps[i]["attend_day"] == undefined ? "" : emps[i]["attend_day"];
+            table.rows[i+1].cells[6].innerText = emps[i]["absent_day"] == undefined ? "" : emps[i]["absent_day"];
+            table.rows[i+1].cells[7].innerText = emps[i]["ask_leave_day"] == undefined ? "" : emps[i]["ask_leave_day"];
+            table.rows[i+1].cells[8].innerHTML = " <a href='#' class='btn btn-primary btn-xs' data-toggle='modal' data-target='#editEmpDialog' id='edit_atd_" + i + "' onclick='editAtdInfo(this)'>修改</a>" +
+                "   <a href='#' class='btn btn-danger btn-xs' id='delete_atd_" + i + "'onclick='deleteAtdInfo(this)'>删除</a>";
+
+        }
+    }
+
+    //根据页数获取员工数据
+    function getEmpByPage(page) {
+        var page_url;
+        var data;
+        var dept = $("#search_dept").val();
+        var srch_content = $("#search_input").val()
+        if(dept.indexOf("大数据") != -1){
+            dept = "大数据";
+        }else{
+            if (dept != ""){
+                dept = "智能物联";
+            }
+        }
+        if (search_state == 1){
+            page_url = "${pageContext.request.contextPath }/attend/page/" + page;
+            data = {};
+        }else if(search_state == 2){
+            page_url = "${pageContext.request.contextPath }/attend/tj_srch";
+            data = eval("(" + "{dept:'" + dept+ "',start_index:'" + page + "'}" +")")
+            page_url = "${pageContext.request.contextPath }/attend/mh_srch";
+            data = eval("(" + "{srch_content:'" + srch_content+ "',start_index:'" + page + "'}" +")")
+        }
+        $.ajax({
+            url:page_url,
+            type:"get",
+            data:data,
+            dataType:"json",
+            success:function (data) {
+                console.log(JSON.stringify(data))
+                $("#emp_total").text(data.total);
+                emp_total = data.total;
+                page_total = emp_total % page_size == 0 ? emp_total/page_size : parseInt(emp_total/page_size) + 1;
+                $("#now_page").text(data.now_page);
+                each_emps(data.atds);
+            }
+        })
+
+    }
+
+</script>
+<%--分页 end--%>
+
+<%--搜索查询 start--%>
+<script type="application/javascript">
+
+    //重置
+    function reset(){
+        $("#search_dept").val("");
+        search_state = false;
+        window.location.reload()
+    }
+
+    //重置事件
+    $(function () {
+        $("#reset").click(function () {
+            reset();
+        })
+    })
+
+    //条件查询
+    $(function () {
+        $("#condition_srch").click(function () {
+            var dept = $("#search_dept").val();
+            if(dept.indexOf("大数据") != -1){
+                dept = "大数据";
+            }else{
+                if (dept != ""){
+                    dept = "智能物联";
+                }
+            }
+            clear_table();
+
+            $.ajax({
+                url:"${pageContext.request.contextPath}/attend/tj_srch",
+                type:"get",
+                data:{dept:dept, start_index:1},
+                dataType:"json",
+                success:function (data) {
+                    //console.log(JSON.stringify(data));
+                    $("#emp_total").text(data.total);
+                    emp_total = data.total;
+                    page_total = emp_total % page_size == 0 ? emp_total/page_size : parseInt(emp_total/page_size) + 1;
+                    $("#now_page").text(data.now_page);
+                    hide_page();
+                    init_page();
+                    search_state = 2;
+                    each_emps(data.atds);
+                }
+            })
+        })
+    })
+
+    //模糊查询
+    $(function () {
+        $("#mh_srch").click(function () {
+            var search_content = $("#search_input").val();
+            $.ajax({
+                url:"${pageContext.request.contextPath}/attend/mh_srch",
+                data:{srch_content:search_content},
+                type:"get",
+                dataType:"json",
+                success:function (data) {
+                    $("#emp_total").text(data.total);
+                    emp_total = data.total;
+                    page_total = emp_total % page_size == 0 ? emp_total/page_size : parseInt(emp_total/page_size) + 1;
+                    $("#now_page").text(data.now_page);
+                    hide_page();
+                    init_page();
+                    search_state = 3;
+                    clear_table();
+                    each_emps(data.atds);
+                }
+            })
+        })
+    })
+
+</script>
+<%--搜索查询 end--%>
+
+<%--对数据进行增删改查--%>
+<script type="application/javascript">
+
+    //清空添加考勤记录窗口中的数据
+    function clearAdtInfo() {
+        $("#new_emp_id").val("");
+        $("#new_dept").val("");
+        $("#new_emp_name").val("");
+        $("#new_late_num").val("");
+        $("#new_ask_leave_day").val("");
+        $("#new_absent_day").val("");
+        $("#new_leave_early_num").val("");
+        $("#new_attend_day").val("");
+    }
+
+    //清空修改框的信息
+    function clearEditInfo() {
+        //清除输入框中的内容
+        $("#edit_emp_id").val("");
+        $("#edit_emp_name").val("");
+        $("#edit_ask_leave_day").val("");
+        $("#edit_leave_early_num").val("");
+        $("#edit_absent_day").val("");
+        $("#edit_attend_day").val("");
+        $("#edit_dept").val("");
+        $("#edit_late_num").val("");
+    }
+
+    //添加员工信息
+    /*
+    * ajax以序列化表单的形式向后台提交数据时，序列化的数据不是json格式，
+    * 所以不用写contentType : "application/json;charset=utf-8"和dataType : 'json'。
+    * 否则后台解析不出来，无法注入bean
+    *
+    * */
+    function createAtd() {
+        $.ajax({
+            url:"${pageContext.request.contextPath}/attend/create",
+            type:"post",
+            data:$("#new_adt_form").serialize(),
+            /* contentType : "application/json;charset=utf-8",
+             dataType : 'json',*/
+            success:function(result){
+                if (result == "ok") {
+                    alert("添加成功！");
+                    window.location.reload();
+                }else{
+                    alert("客户创建失败！");
+                    //window.location.reload();
+                }
+            },
+            error : function(result) {
+                alert("系统异常");
+            }
+
+        })
+
+    }
+
+    //通过id获取员工信息，并将信息显示到模态框
+    function editAtdInfo(obj, id) {
+        clearEditInfo();
+        var emp_id;
+        if (id == undefined){
+            var tr = $("#" + obj.id).parent().parent();
+            emp_id = tr.children("td").eq(0).text();
+        }else{
+            emp_id = id;
+        }
+
+        $.ajax({
+            url:"${pageContext.request.contextPath}/attend/selectById",
+            type:"get",
+            data:{"emp_id":emp_id},
+            contentType :"application/json;charset=utf-8",
+            dataType:"json",
+            success:function (result) {
+                $("#edit_emp_id").val(result.emp_id);
+                if (result.dept.indexOf("大数据") != -1){
+                    $("#edit_dept").val("java大数据");
+                }else{
+                    $("#edit_dept").val("智能物联");
+                }
+                $("#edit_emp_name").val(result.emp_name);
+                $("#edit_late_num").val(result.late_num);
+                $("#edit_leave_early_num").val(result.leave_early_num);
+                $("#edit_attend_day").val(result.attend_day);
+                $("#edit_absent_day").val(result.absent_day);
+                $("#edit_ask_leave_day").val(result.ask_leave_day);
+            },
+            error:function (e) {
+                alert("系统异常!")
+            }
+
+        })
+    }
+
+    //更新员工信息
+    function updateAtdInfo(){
+        $.post("${pageContext.request.contextPath}/attend/update", $("#edit_adt_form").serialize(),function (data) {
+            if (data == "ok"){
+                var now_page = $("#now_page").text()
+                getEmpByPage(now_page);
+            }else{
+                alert("修改失败")
+                //window.location.reload();
+            }
+        })
+    }
+
+    //删除员工信息
+    function deleteAtdInfo(obj, id) {
+        var emp_id;
+        if (id == undefined){
+            var tr = $("#" + obj.id).parent().parent();
+            emp_id = tr.children("td").eq(0).text();
+        }else{
+            emp_id = id;
+        }
+
+        if(confirm("你确定要删除该员工吗？")){
+            $.post("${pageContext.request.contextPath}/attend/delete",
+                {"emp_id": emp_id},
+                function (data) {
+                    if (data == "ok"){
+                        var now_page = $("#now_page").text()
+                        clear_table();
+                        getEmpByPage(now_page);
+                    }else{
+                        alert("删除失败")
+                    }
+                }
+            )
+        }
+
+    }
+
+</script>
+<%--对数据进行增删改查 end--%>
+
+
+</body>
+</html>

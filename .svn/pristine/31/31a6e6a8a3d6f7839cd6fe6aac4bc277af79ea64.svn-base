@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.aboluo.attend.dao.AdminDao">
+
+    <sql id="table_name">emp</sql>
+    <sql id="emp_field">emp_id, dept, emp_name, stu_id, level , password, disable</sql>
+    <resultMap id="empResultMap" type="com.aboluo.attend.pojo.Emp">
+        <id property="emp_id" column="emp_id"/>
+        <result property="dept" column="dept"/>
+        <result property="emp_name" column="emp_name"/>
+        <result property="gender" column="gender"/>
+        <result property="level" column="level"/>
+        <result property="disable" column="disable"/>
+        <result property="password" column="password"/>
+    </resultMap>
+    <insert id="insertAdmin" parameterType="com.aboluo.attend.pojo.Emp">
+        insert into <include refid="table_name"/>
+        (emp_id, dept, emp_name, stu_id, gender, tel, address,disable,level)
+        value (#{emp_id}, #{dept}, #{emp_name}, #{stu_id}, #{gender}, #{tel}, #{address},#{disable},#{level})
+    </insert>
+
+    <update id="updateAdmin" parameterType="com.aboluo.attend.pojo.Emp">
+        update <include refid="table_name"/> set emp_name=#{emp_name},dept=#{dept}, stu_id=#{stu_id}, gender=#{gender}, tel=#{tel}, address=#{address},disable=#{disable},password=#{password}
+        ,level=#{level}
+        where emp_id=#{emp_id}
+    </update>
+
+    <delete id="deleteEmp" parameterType="int">
+        delete from <include refid="table_name"/>
+        where emp_id = #{emp_id}
+    </delete>
+
+    <!--获取所有员工-->
+    <select id="selectAllEmp" resultMap="empResultMap">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        ORDER BY emp_id desc
+    </select>
+
+    <!--获取员工信息总条数-->
+    <select id="selectEmpCount" resultType="int">
+        select count(emp_id) emp_count from <include refid="table_name"/>
+        where level =3
+    </select>
+
+    <!--分页获取员工信息-->
+    <select id="selectAdminByPage" resultMap="empResultMap" parameterType="map">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        where level=3
+        ORDER BY level asc,emp_id asc limit  #{start_index}, #{page_size}
+    </select>
+
+    <!--改变用户权限-->
+
+    <!--分页获取管理员信息 -->
+    <select id="get_AdminByPage" resultMap="empResultMap" parameterType="map">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        where level=2
+        ORDER BY level asc,emp_id asc limit  #{start_index}, #{page_size}
+    </select>
+
+    <!--获取管理员信息总条数-->
+    <select id="selectAdminCount" resultType="int">
+        select count(emp_id) emp_count from <include refid="table_name"/>
+        where level =2
+    </select>
+
+    <!--通过员工编号获取员工信息-->
+    <select id="selectAdminById" parameterType="int" resultType="com.aboluo.attend.pojo.Emp">
+        select <include refid="emp_field"/> from <include refid="table_name"/>
+        where emp_id=#{emp_id}
+    </select>
+
+    <!--修改管理员个人信息-->
+    <update id="updateOwnInfo" parameterType="com.aboluo.attend.pojo.Emp">
+        update <include refid="table_name"/> set emp_name=#{emp_name},dept=#{dept}, gender=#{gender}, tel=#{tel}, address=#{address}
+        where emp_id=#{emp_id}
+    </update>
+
+    <!--修改密码 -->
+    <update id="changePas" parameterType="com.aboluo.attend.pojo.Emp">
+        update <include refid="table_name"/>
+        set password=#{password}
+        where emp_id=#{emp_id} ;
+    </update>
+</mapper>

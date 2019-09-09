@@ -1,0 +1,336 @@
+package com.aboluo.attend.controller;
+
+import com.aboluo.attend.pojo.Attendance;
+import com.aboluo.attend.pojo.Charts;
+import com.aboluo.attend.pojo.Emp;
+import com.aboluo.attend.service.AdminService;
+import com.aboluo.attend.service.AttendanceService;
+import com.aboluo.attend.service.EmpService;
+import com.aboluo.attend.util.ExcelUtil;
+import com.aboluo.attend.util.Page;
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
+import sun.util.logging.PlatformLogger;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.*;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Controller
+@RequestMapping("/manager")
+public class ManagerController {
+
+    @Autowired
+    private EmpService empService;
+
+    @Autowired
+    private AdminService adminService;
+
+    @Autowired
+    private AttendanceService attendanceService;
+
+    //进入注册页面
+    @RequestMapping(value = "/register")
+    public String register(){
+        return "login/register";
+    }
+
+    //默认获取第一页的员工数据（管理员权限）
+    @RequestMapping(value = "/empList", method = RequestMethod.GET)
+    public String defaultEmpList(Model model){
+        Page page = new Page();
+        int start_index = 1;
+        int page_size = 7;
+        Map<String, Integer> index_map = new HashMap<>();
+        index_map.put("start_index", start_index-1);
+        index_map.put("page_size", page_size);
+        List<Emp> empList = empService.selectEmpByPage(index_map);
+        int total = empService.selectEmpCount();
+        page.setNow_page(start_index);
+        page.setTotal(total);
+        page.setPage_size(page_size);
+        page.setEmps(empList);
+        model.addAttribute("page" ,page);
+        return "admin/empManage";
+    }
+
+    //分页获取员工信息（管理员权限）
+    @RequestMapping(value = "/empList/{page}", method = RequestMethod.GET)
+    @ResponseBody
+    public Page EmpList(@PathVariable(name = "page") Integer index){
+        Page page = new Page();
+        int page_size = 7;
+        int start_index = (index-1)*page_size;
+        Map<String, Integer> index_map = new HashMap<>();
+        index_map.put("start_index", start_index);
+        index_map.put("page_size", page_size);
+        List<Emp> empList = empService.selectEmpByPage(index_map);
+        int total = empService.selectEmpCount();
+        page.setNow_page(index);
+        page.setTotal(total);
+        page.setPage_size(page_size);
+        page.setEmps(empList);
+        return page;
+    }
+
+    /*
+     *插入数据
+     * 注意：参数前写@RequestBody只接收json格式的数据，@ResponseBody返回的是文本信息到前端
+     * */
+    @RequestMapping(value = "/create" ,method = RequestMethod.POST)
+    @ResponseBody
+    public String createEmp(Emp emp){
+        int count = empService.insertEmp(emp);
+        if (count > 0){
+            return "successful";
+        }else {
+            return "fail";
+        }
+    }
+
+    //通过员工编号来查询员工信息
+    @RequestMapping(value = "/selectEmpById", method = RequestMethod.GET)
+    @ResponseBody
+    public Emp EmpById(Integer emp_id){
+        Emp emp = empService.selectEmpById(emp_id);
+        if (emp != null){
+            return emp;
+        }else {
+            return null;
+        }
+
+    }
+
+    @RequestMapping(value = "/updateEmp", method = RequestMethod.POST)
+    @ResponseBody
+    public String updateEmp(Emp emp){
+        //System.out.println(emp);
+        int count = empService.updateEmp(emp);
+        if (count > 0){
+            return "ok";
+        }else{
+            return "fail";
+        }
+    }
+    /**/
+    @RequestMapping("/deleteEmp")
+    @ResponseBody
+    public String deleteEmp(Integer emp_id){
+        int count = empService.deleteEmp(emp_id);
+        if (count > 0){
+            return "ok";
+        }else{
+            return "false";
+        }
+    }
+
+
+    /*
+     * 条件搜索
+     * 条件分别为部门，性别，禁用状态
+     * 需要传递一个默认的页数，start,默认为1
+     * */
+    @RequestMapping(value = "/tj_srch", method = RequestMethod.GET)
+    @ResponseBody
+    public Page searchEmpsByConditinon(@RequestParam("dept") String dept, @RequestParam("gender") String gender,
+                                       @RequestParam(value = "disable") Integer disable, @RequestParam(value = "start_index", defaultValue = "1") Integer start,
+                            HttpServletRequest request) throws UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");
+        List<Emp> emps = empService.searchByCondition(dept, gender, disable);
+        int total = empService.getSearchEmpCount(dept, gender, disable);
+        Page page = new Page();
+        page.setNow_page(start);
+        page.setTotal(total);
+        page.setPage_size(7);
+        page.setAll_emps(emps);
+        List<Emp> emps_page = page.emp_page();
+        page.setEmps(emps_page);
+        return page;
+    }
+
+    //条件搜索结果分页
+    @RequestMapping(value = "/srch_result", method = RequestMethod.GET)
+    @ResponseBody
+    public Page searchRusult(@RequestParam("dept") String dept, @RequestParam("gender") String gender,
+                             @RequestParam("disable") Integer disable, @RequestParam(value = "start_index") Integer start,
+                             HttpServletRequest request) throws UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");
+        List<Emp> emps = empService.searchByCondition(dept, gender, disable);
+        int total = empService.getSearchEmpCount(dept, gender, disable);
+        Page page = new Page();
+        page.setNow_page(start);
+        page.setTotal(total);
+        page.setPage_size(7);
+        page.setAll_emps(emps);
+        List<Emp> emps_page = page.emp_page();
+        page.setEmps(emps_page);
+        return page;
+    }
+
+    //模糊查询
+    @RequestMapping(value = "mh_srch", method = RequestMethod.GET)
+    @ResponseBody
+    public Page mh_search(@RequestParam("srch_content") String content, @RequestParam(value = "page", defaultValue = "1") Integer index,
+                          HttpServletRequest request) throws UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");
+        Page page = new Page();
+        List<Emp> all_emps = empService.searchByContent(content);
+        int total = empService.getSearchCount(content);
+        page.setAll_emps(all_emps);
+        page.setTotal(total);
+        page.setPage_size(7);
+        page.setNow_page(index);
+        List<Emp> emps = page.emp_page();
+        page.setEmps(emps);
+        return page;
+    }
+
+    /*
+    * 跳转到个人信息界面
+    * */
+    @RequestMapping("/adminInfo")
+    public String adminOwnInfo(){
+        return "admin/adminInfo";
+    }
+
+    /*
+    * 修改个人信息
+    * */
+    @RequestMapping(value = "/updateInfo", method = RequestMethod.POST)
+    @ResponseBody
+    public Emp updateAdminInfo(Emp emp,HttpSession session){
+        int count = adminService.updateOwnInfo(emp);
+        if (count > 0){
+            Emp emp1 = empService.selectEmpById(emp.getEmp_id());
+            session.setAttribute("session_emp",emp1);
+            return emp1;
+        }else {
+            return null;
+        }
+    }
+
+    /*
+    * 上传员工信息(单文件上传)
+    * */
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    @ResponseBody
+    public String uploadEmpFile(HttpServletRequest request, @RequestParam(value = "import_file") MultipartFile partFile) throws UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");
+        if (!partFile.isEmpty()){
+            try {
+                String path = request.getServletContext().getRealPath("/upload");
+                //定义文件
+                File parent = new File(path);
+                if(!parent.exists()) parent.mkdirs();
+
+                String filename = partFile.getOriginalFilename();
+                File file = new File(path+"/"+filename);
+                String filePath = path+"/"+filename;
+                InputStream inputStream = partFile.getInputStream();
+                FileUtils.copyInputStreamToFile(inputStream, file);
+                if(inputStream!=null){
+                    inputStream.close();
+                }
+                ExcelUtil excel = new ExcelUtil();
+                //List<Attendance> atds = excel.Excel2Bean(filePath, "实训方向", 2, 0);
+
+                return "ok";
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "fail";
+            }
+        }else{
+                return "fail";
+        }
+    }
+
+    @RequestMapping(value = "/downloadEmp", method = RequestMethod.GET)
+    public void outputEmpInfo(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        List<Emp> emps = empService.selectAllEmp();
+        ExcelUtil excelUtil = new ExcelUtil();
+        String[] headers = {"员工编号", "所属部门", "员工姓名", "学号", "性别", "电话", "地址", "禁用状态"};
+        String filename = "员工信息表.xls";
+        // 文件名称
+        String fileName = URLEncoder.encode(filename, "utf-8");
+        // 通过response设置Content-Type、Content-Disposition
+        response.setContentType("application/vnd.ms-excel");
+        response.setHeader("Content-Disposition",
+                "attachment;filename*=utf-8'zh_cn'" + fileName);
+
+        OutputStream outputStream = null;
+        HSSFWorkbook workBook = null;
+
+        try {
+            // 获取输出流
+            outputStream = response.getOutputStream();
+            // 生成workBook
+            workBook = excelUtil.createEmpWorkbook(emps, headers);
+            workBook.write(outputStream);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }finally{
+            //关闭
+            if (outputStream!=null) {
+                outputStream.close();
+            }
+        }
+    }
+
+    @RequestMapping("/empCharts")
+    public String empInfoCharts(Model model){
+        int manCount = empService.getByContentCount("男");
+        int womanCount = empService.getByContentCount("女");
+        int znCount = empService.getByContentCount("智能物联");
+        int dsjCount = empService.getByContentCount("大数据");
+        int disable = empService.getByContentCount("1");
+        int total = empService.selectEmpCount();
+
+        Charts charts = new Charts();
+        charts.setMan(manCount);
+        charts.setWoman(womanCount);
+        charts.setZn_dept(znCount);
+        charts.setDsj_dept(dsjCount);
+        charts.setDisable(disable);
+        charts.setTotal(total);
+
+        model.addAttribute("charts", charts);
+
+        return "admin/charts";
+    }
+    @RequestMapping("/change")
+    @ResponseBody
+    public String changePassword(@RequestParam("new_password")String new_password,
+                                 @RequestParam("old_password")String old_password,
+                                 HttpSession session) {
+        Emp emp = (Emp) session.getAttribute("session_emp");
+        if(emp.getPassword().equals(old_password)){
+            emp.setPassword(new_password);
+            int count = adminService.changePas(emp);
+            if(count>0){
+                return "success";
+            }
+            else {
+                return "failed";
+            }
+        }
+        else {
+            return "failed";
+        }
+    }
+
+
+    }
+

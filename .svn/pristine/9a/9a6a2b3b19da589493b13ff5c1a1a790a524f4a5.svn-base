@@ -1,0 +1,57 @@
+package com.aboluo.attend.dao;
+
+import com.aboluo.attend.pojo.Emp;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Map;
+
+public interface AdminDao {
+
+    List<Emp> get_AdminByPage(Map<String, Integer> index_map);
+
+    /*获取员工信息总条数*/
+    int selectEmpCount();
+    /*获取管理员信息条数*/
+    int selectAdminCount();
+
+    int selectAdCount();
+
+    Emp selectAdminById(int emp_id);
+
+    int updateAdmin(Emp emp);
+
+    int insertAdmin(Emp emp);
+
+    int deleteEmp(int emp_id);
+
+    /*分页获取员工信息*/
+    List<Emp> selectAdminByPage(Map<String, Integer> index_map);
+
+    /*修改管理员个人信息*/
+    int updateOwnInfo(Emp emp);
+
+    /*修改密码*/
+    int changePas(Emp emp);
+
+    List<Emp> searchAdByContent(@Param("content") String content);
+
+    int getAdSearchCount(@Param("content") String content);
+
+    //管理员信息条件查询
+    List<Emp> searchAdminByCondition(@Param("dept") String dept, @Param("gender") String gender, @Param("disable") Integer disable, @Param("page_info") String page_info);
+
+    int getAdminCountByCondition(@Param("dept") String dept, @Param("gender") String gender, @Param("disable") Integer disable, @Param("page_info") String page_info);
+
+    /*条件搜索获取权限管理员工信息*/
+    List<Emp> searchByAdCondition(@Param("dept") String dept, @Param("gender") String gender, @Param("disable") Integer disable);
+
+    /*条件搜索获取权限管理员工总记录数*/
+    int searchByAdCount(@Param("dept") String dept, @Param("gender") String gender, @Param("disable") Integer disable);
+
+    /*权限信息的模糊查询计数*/
+    int getPoSearchCount(@Param("content") String content);
+
+    /*权限信息的模糊查询*/
+    List<Emp> searchPoByContent(@Param("content") String content);
+}

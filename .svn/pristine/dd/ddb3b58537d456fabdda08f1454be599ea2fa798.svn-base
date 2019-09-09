@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="atdm:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>atdm</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="attendsystem.war">
+      <element id="artifact" artifact-name="atdm:war exploded" />
+    </root>
+  </artifact>
+</component>

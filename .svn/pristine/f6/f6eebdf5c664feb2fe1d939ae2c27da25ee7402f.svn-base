@@ -1,0 +1,39 @@
+package com.aboluo.attend.service;
+
+import com.aboluo.attend.pojo.Emp;
+
+import java.util.List;
+import java.util.Map;
+
+public interface EmpService {
+
+    int insertEmp(Emp emp);
+
+    int deleteEmp(int emp_id);
+
+    int updateEmp(Emp emp);
+
+    Emp selectEmpById(int emp_id);
+
+    List<Emp> selectAllEmp();
+
+    int selectEmpCount();
+
+    List<Emp> searchByCondition(String dept, String gender, Integer disable);
+
+    Emp checkEmp(String name);
+
+    int register(Emp emp);
+
+    int getSearchEmpCount(String dept, String gender, Integer disable);
+
+    List<Emp> selectEmpByPage(Map<String, Integer> index_map);
+
+    List<Emp> searchByContent(String content);
+
+    int getSearchCount(String content);
+
+    int findEmp_id(int id);
+
+
+}

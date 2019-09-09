@@ -1,0 +1,16 @@
+<%--
+  Created by IntelliJ IDEA.
+  User: zenjinlin
+  Date: 2019/7/18
+  Time: 22:24
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Administrators</title>
+</head>
+<body>
+<jsp:include page="../common/common.jsp"/>
+</body>
+</html>

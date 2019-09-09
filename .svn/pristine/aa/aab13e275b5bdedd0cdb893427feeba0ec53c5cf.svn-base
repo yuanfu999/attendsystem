@@ -1,0 +1,91 @@
+package com.aboluo.attend.controller;
+
+import com.aboluo.attend.pojo.Emp;
+import com.aboluo.attend.service.EmpService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.UnsupportedEncodingException;
+
+@Controller
+public class IndexController {
+    @Autowired
+    public EmpService indexService;
+    @RequestMapping(value = "login",method = RequestMethod.GET)
+    public String gelogin(){
+        return "index";
+    }
+
+    /*登录验证*/
+    @RequestMapping(value = "/index",method= RequestMethod.POST)
+    public String phLogin(HttpServletRequest request, HttpServletResponse response, HttpSession session){
+        try {
+            request.setCharacterEncoding("utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        response.setCharacterEncoding("utf-8");
+
+        String emp_name =  request.getParameter("emp_name");
+        String password =  request.getParameter("password");
+        int level =  Integer.valueOf(request.getParameter("level"));
+        Emp emp = indexService.checkEmp(emp_name);
+        if(emp!=null) {
+            session.setAttribute("session_emp",emp);
+            String s = emp.getPassword();
+            if (s.equals(password) && emp.getDisable() != 1 && level == emp.getLevel()) {
+                if(level==1){
+                    return "redirect:/super/supadmin";
+                }
+                if(level==2){
+                    return "redirect:/manager/adminInfo";
+                }
+                if(level==3){
+                    return "redirect:/attend/atdList";
+                }
+            }
+        }
+        else {
+            return "login/login";
+        }
+        return "login/login";
+    }
+    /*注册验证、工号检重*/
+    @RequestMapping(value = "/register",method = RequestMethod.GET)
+    public String ster(){
+        return "login/register";
+    }
+
+    @RequestMapping(value = "/register",method = RequestMethod.POST)
+    public String reg_map(Emp emp,HttpSession session,HttpServletRequest request, HttpServletResponse response) {
+        int find = indexService.findEmp_id(emp.getEmp_id());
+        if(find>0){
+            session.setAttribute("emp",emp);
+            return "login/register";
+        }else {
+            int count = indexService.register(emp);
+            if (count > 0) {
+                session.setAttribute("session_emp",emp);
+                return "redirect:/manager/empList";
+            }
+        }
+        return "login/register";
+    }
+
+    /*@RequestMapping(value = "/admin",method = RequestMethod.GET)
+    public String str(){
+<<<<<<< .mine
+        return "admin/supAdmin";
+||||||| .r9
+        return "Administrators";
+=======
+        return "supAdmin/Administrators";
+>>>>>>> .r10
+    }*/
+
+}
